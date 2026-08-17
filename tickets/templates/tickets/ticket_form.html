@@ -1,0 +1,34 @@
+{% extends "tickets/base.html" %}
+{% block title %}New Ticket - AI Helpdesk{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-8">
+    <div class="card ticket-card p-4">
+      <h4 class="mb-3">Create a New Ticket</h4>
+      <form method="post">
+        {% csrf_token %}
+        <div class="mb-3">
+          <label class="form-label">Title</label>
+          {{ form.title }}
+        </div>
+        <div class="mb-3">
+          <label class="form-label">Description</label>
+          {{ form.description }}
+        </div>
+        <div class="row">
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Category</label>
+            {{ form.category }}
+          </div>
+          <div class="col-md-6 mb-3">
+            <label class="form-label">Priority</label>
+            {{ form.priority }}
+          </div>
+        </div>
+        <p class="text-muted small">Note: an AI analysis (category, priority, diagnosis) can be generated from the ticket detail page after submission.</p>
+        <button class="btn btn-primary" type="submit"><i class="bi bi-send"></i> Submit Ticket</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

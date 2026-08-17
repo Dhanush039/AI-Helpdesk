@@ -1,0 +1,24 @@
+{% extends "tickets/base.html" %}
+{% block title %}Knowledge Base - AI Helpdesk{% endblock %}
+{% block content %}
+<h3 class="mb-3">Knowledge Base</h3>
+<form method="get" class="row g-2 mb-3">
+  <div class="col-md-5">
+    <input type="text" name="q" value="{{ q }}" class="form-control" placeholder="Search articles...">
+  </div>
+  <div class="col-md-2"><button class="btn btn-outline-primary w-100" type="submit">Search</button></div>
+</form>
+<div class="row g-3">
+  {% for a in articles %}
+  <div class="col-md-4">
+    <div class="card kb-card p-3 h-100">
+      <span class="badge bg-secondary mb-2" style="width:fit-content">{{ a.category }}</span>
+      <h6><a href="{% url 'kb_detail' a.pk %}">{{ a.title }}</a></h6>
+      <p class="text-muted small">{{ a.summary }}</p>
+    </div>
+  </div>
+  {% empty %}
+  <p class="text-muted">No articles found.</p>
+  {% endfor %}
+</div>
+{% endblock %}

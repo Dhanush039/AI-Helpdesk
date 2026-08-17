@@ -1,0 +1,143 @@
+{% extends "tickets/base.html" %}
+{% block title %}Ticket #{{ ticket.pk }} - AI Helpdesk{% endblock %}
+{% block content %}
+
+<div class="row">
+  <div class="col-lg-8">
+    <div class="card ticket-card p-4 mb-3">
+      <div class="d-flex justify-content-between align-items-start">
+        <div>
+          <h4 class="mb-1">Ticket #{{ ticket.pk }} &middot; {{ ticket.title }}</h4>
+          <p class="text-muted mb-2">Opened by {{ ticket.created_by.username }} on {{ ticket.created_at|date:"M d, Y H:i" }}</p>
+        </div>
+        <div class="text-end">
+          <span class="badge {{ ticket.priority_badge_class }} mb-1">{{ ticket.priority }}</span>
+          <span class="badge {{ ticket.status_badge_class }} mb-1">{{ ticket.status }}</span>
+        </div>
+      </div>
+      <hr>
+      <p><strong>Description:</strong><br>{{ ticket.description|linebreaks }}</p>
+      <p class="mb-0"><strong>Category:</strong> {{ ticket.category }} &nbsp;|&nbsp;
+         <strong>Assigned Agent:</strong> {{ ticket.assigned_to.username|default:"Unassigned" }}</p>
+    </div>
+
+    <div class="ai-panel mb-3">
+      <div class="d-flex justify-content-between align-items-center mb-2">
+        <h5 class="mb-0"><i class="bi bi-robot"></i> AI Analysis</h5>
+        {% if can_manage %}
+        <form method="post" action="{% url 'ticket_analyze' ticket.pk %}">
+          {% csrf_token %}
+          <button class="btn btn-sm btn-primary" type="submit"><i class="bi bi-magic"></i> Analyze with AI</button>
+        </form>
+        {% endif %}
+      </div>
+
+      {% if not ai_configured %}
+        <div class="alert alert-warning mb-0">AI service is not configured. Please configure OPENAI_API_KEY.</div>
+      {% elif ticket.ai_last_analyzed_at %}
+        {% if ticket.ai_error %}
+          <div class="alert alert-warning">Some AI steps had issues: {{ ticket.ai_error }}</div>
+        {% endif %}
+        <div class="row">
+          <div class="col-md-6">
+            <p class="mb-1"><strong>AI Category:</strong> {{ ticket.ai_category|default:"-" }}</p>
+            <p class="mb-1"><strong>AI Priority:</strong> {{ ticket.ai_priority|default:"-" }}</p>
+            <p class="mb-1"><strong>Issue Type:</strong> {{ ticket.ai_issue_type|default:"-" }}</p>
+          </div>
+          <div class="col-md-6">
+            <p class="mb-1"><strong>Escalation Recommended:</strong> {{ ticket.ai_escalation_recommendation|default:"-" }}</p>
+            <p class="mb-1"><strong>Recommended Team:</strong> {{ ticket.ai_recommended_team|default:"-" }}</p>
+          </div>
+        </div>
+        <p class="mb-1"><strong>Problem Summary:</strong><br>{{ ticket.ai_summary|default:"-"|linebreaks }}</p>
+        {% if ticket.ai_diagnosis %}
+          <p class="mb-1"><strong>Possible Causes:</strong></p>
+          <ul>{% for c in ticket.ai_diagnosis.possible_causes %}<li>{{ c }}</li>{% endfor %}</ul>
+          <p class="mb-1"><strong>Troubleshooting Steps:</strong></p>
+          <ol>{% for s in ticket.ai_diagnosis.troubleshooting_steps %}<li>{{ s }}</li>{% endfor %}</ol>
+        {% endif %}
+        <p class="mb-0"><strong>Recommended Resolution:</strong><br>{{ ticket.ai_suggested_solution|default:"-" }}</p>
+        <p class="small text-muted mt-2 mb-0"><i class="bi bi-info-circle"></i> AI output is a recommendation only and requires human verification before any destructive or administrative action is taken.</p>
+      {% else %}
+        <p class="text-muted mb-0">No AI analysis yet. {% if can_manage %}Click "Analyze with AI" to generate one.{% else %}An agent can run AI analysis on this ticket.{% endif %}</p>
+      {% endif %}
+    </div>
+
+    {% if can_manage and similar_tickets %}
+    <div class="card ticket-card p-3 mb-3">
+      <h6><i class="bi bi-search"></i> Similar Past Tickets</h6>
+      <ul class="list-group list-group-flush">
+        {% for s in similar_tickets %}
+        <li class="list-group-item d-flex justify-content-between align-items-center">
+          <a href="{% url 'ticket_detail' s.pk %}">#{{ s.pk }} {{ s.title }}</a>
+          <span class="badge {{ s.status_badge_class }}">{{ s.status }}</span>
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+
+    {% if kb_articles %}
+    <div class="card ticket-card p-3 mb-3">
+      <h6><i class="bi bi-journal-text"></i> Related Knowledge Base Articles</h6>
+      <ul class="list-group list-group-flush">
+        {% for a in kb_articles %}
+        <li class="list-group-item"><a href="{% url 'kb_detail' a.pk %}">{{ a.title }}</a></li>
+        {% endfor %}
+      </ul>
+    </div>
+    {% endif %}
+
+    <div class="card ticket-card p-3 mb-3">
+      <h6><i class="bi bi-chat-dots"></i> Comments</h6>
+      {% for c in comments %}
+        <div class="comment-bubble">
+          <strong>{{ c.author.username }}</strong>
+          <span class="text-muted small">{{ c.created_at|date:"M d, Y H:i" }}</span>
+          <p class="mb-0">{{ c.body|linebreaks }}</p>
+        </div>
+      {% empty %}
+        <p class="text-muted">No comments yet.</p>
+      {% endfor %}
+      <form method="post">
+        {% csrf_token %}
+        {{ comment_form.body }}
+        <button class="btn btn-primary btn-sm mt-2" type="submit" name="comment_submit">Add Comment</button>
+      </form>
+    </div>
+  </div>
+
+  <div class="col-lg-4">
+    {% if can_manage %}
+    <div class="card ticket-card p-3 mb-3">
+      <h6>Actions</h6>
+      <form method="post" action="{% url 'ticket_assign' ticket.pk %}" class="mb-2">
+        {% csrf_token %}
+        {{ assign_form.agent }}
+        <button class="btn btn-outline-primary btn-sm w-100 mt-2" type="submit">Assign</button>
+      </form>
+      <div class="d-grid gap-2">
+        <form method="post" action="{% url 'ticket_update_status' ticket.pk 'In Progress' %}">{% csrf_token %}<button class="btn btn-primary btn-sm w-100" type="submit">Start Work</button></form>
+        <form method="post" action="{% url 'ticket_update_status' ticket.pk 'Resolved' %}">{% csrf_token %}<button class="btn btn-success btn-sm w-100" type="submit">Resolve</button></form>
+        <form method="post" action="{% url 'ticket_update_status' ticket.pk 'Escalated' %}">{% csrf_token %}<button class="btn btn-danger btn-sm w-100" type="submit">Escalate</button></form>
+        <form method="post" action="{% url 'ticket_update_status' ticket.pk 'Closed' %}">{% csrf_token %}<button class="btn btn-secondary btn-sm w-100" type="submit">Close</button></form>
+      </div>
+    </div>
+    {% endif %}
+
+    <div class="card ticket-card p-3">
+      <h6><i class="bi bi-clock-history"></i> Ticket History</h6>
+      <div class="timeline mt-2">
+        {% for h in history %}
+          <div class="timeline-item">
+            <div class="small text-muted">{{ h.created_at|date:"M d, H:i" }}</div>
+            <div>{{ h.event }}{% if h.actor %} <span class="text-muted small">by {{ h.actor.username }}</span>{% endif %}</div>
+          </div>
+        {% empty %}
+          <p class="text-muted">No history yet.</p>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

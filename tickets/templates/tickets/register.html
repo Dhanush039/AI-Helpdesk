@@ -1,0 +1,23 @@
+{% extends "tickets/base.html" %}
+{% block title %}Register - AI Helpdesk{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-md-6">
+    <div class="card ticket-card p-4 mt-4">
+      <h3 class="mb-3">Create an Employee Account</h3>
+      <form method="post">
+        {% csrf_token %}
+        {% for field in form %}
+          <div class="mb-3">
+            <label class="form-label">{{ field.label }}</label>
+            {{ field }}
+            {% if field.errors %}<div class="text-danger small">{{ field.errors }}</div>{% endif %}
+          </div>
+        {% endfor %}
+        <button class="btn btn-primary w-100" type="submit">Register</button>
+      </form>
+      <p class="text-center mt-3 mb-0">Already have an account? <a href="{% url 'login' %}">Login</a></p>
+    </div>
+  </div>
+</div>
+{% endblock %}
