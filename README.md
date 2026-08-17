@@ -238,15 +238,8 @@ POST       /api/ai/assistant/
 GET        /api/knowledge-base/
 ```
 
-## 15. Screenshots
 
-_Add screenshots here after running the app locally, e.g.:_
-- Employee dashboard
-- L1 agent dashboard with charts
-- Ticket detail page with AI analysis
-- AI Support Assistant
-
-## 16. Future Improvements
+## 15. Future Improvements
 
 - Replace difflib-based similar-ticket search with embeddings/vector search
 - Add email notifications on ticket status changes
