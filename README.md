@@ -273,3 +273,21 @@ environment (`os.getenv("OPENAI_API_KEY")` via `.env`). It is never
 hardcoded, logged, stored in the database, or exposed via any API
 response. `.env` is excluded from Git via `.gitignore` — only
 `.env.example` (with empty values) is committed.
+
+16.Screeshots of the Project
+a.image of dashboard
+<img width="1600" height="750" alt="image" src="https://github.com/user-attachments/assets/5303e486-69e7-4aec-b417-5216663ae49b" />
+
+b.Tickets
+<img width="1600" height="737" alt="image" src="https://github.com/user-attachments/assets/804be9ec-9c65-4e93-b511-92e09c0eefd1" />
+
+c.<img width="1600" height="749" alt="image" src="https://github.com/user-attachments/assets/759afd7f-60c7-4572-9d06-278e2940771d" />
+
+d.Create a New Ticket
+<img width="1600" height="742" alt="image" src="https://github.com/user-attachments/assets/61e0c1a7-3c48-48f3-afbc-b559f711a97e" />
+
+e.<img width="1600" height="757" alt="image" src="https://github.com/user-attachments/assets/9688c66a-8897-47f3-b66e-b2ab3ef959bb" />
+
+f.<img width="1600" height="601" alt="image" src="https://github.com/user-attachments/assets/93465172-afd7-4269-8860-6a1589901f8a" />
+
+
